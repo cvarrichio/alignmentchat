@@ -1,11 +1,17 @@
 #message-list li {
     display: block;
-    overflow: hidden;
+    /* overflow-wrap: break-word; */
     /* border-right: .15em solid orange; */
-    white-space: nowrap;
-    letter-spacing: .15em;
-    animation: typing 1.2s steps(30, end);
+    word-wrap: break-word;
+    margin-bottom: 90px;
+    /* animation: typing 1.2s steps(30, end); */
   }
+
+  #message-form {
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+}
 
   #message-list li::before {
     content: '';
@@ -23,4 +29,20 @@
   @keyframes blink-caret {
     from, to { border-color: transparent }
     50% { border-color: orange }
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 3px solid #999;
+    border-top-color: #333;
+    animation: spin 1s ease-in-out infinite;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
   }

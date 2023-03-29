@@ -3,7 +3,7 @@
 <head>
     <link rel="stylesheet" href="https://unpkg.com/chota@latest">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/alignment.css') }}">
-    <title>Flask AJAX Example</title>
+    <title>AlignmentGPT</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript">
         $(document).ready(function() {
@@ -13,12 +13,28 @@
                     type: 'POST',
                     url: '/submit_message',
                     data: $('#message-form').serialize(),
+                    beforeSend: function() {
+                        // show spinner
+                        $('#message-list').append('<li><div class="spinner"></div></li>');
+                        window.scrollTo(0, document.body.scrollHeight);
+                    },
                     success: function(data) {
+                        // remove spinner and show message
+                        $('#message-list li:last-child').remove();
                         $('#message-list').append('<li>' + data.message + '</li>');
                         $('#message-form')[0].reset();
+
                     },
                     error: function() {
-                        alert('Error submitting message');
+                        // remove spinner and show error message
+                        $('#message-list li:last-child').remove();
+                        $('#message-list').append('<li>Error submitting message</li>');
+                    },
+                    complete: function() {
+                        // hide spinner
+                        $('#message-list li:last-child .spinner').hide();
+                        //$('#message-list').scrollTop($('#message-list').prop('scrollHeight'));
+                        window.scrollTo(0, document.body.scrollHeight);
                     }
                 });
             });
@@ -26,7 +42,7 @@
     </script>
 </head>
 <body>
-    <h1>Flask AJAX Example</h1>
+    <h1>AlignmentGPT</h1>
     <ul id="message-list">
         <!-- Existing messages will be inserted here -->
     </ul>

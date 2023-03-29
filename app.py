@@ -19,9 +19,10 @@ app = Flask(__name__)
 
 @app.before_request
 def before_request():
-    #embeddings = HuggingFaceEmbeddings(model_name = 'all-mpnet-base-v2')
-    #g.faiss = FAISS.load_local("alignment_faiss_index_mpnet_v2",embeddings)
-    pass
+    global search_index
+    from langchain.embeddings import HuggingFaceEmbeddings
+    embeddings = HuggingFaceEmbeddings(model_name = 'all-mpnet-base-v2')
+    search_index = FAISS.load_local("./models/alignment_faiss_index_mpnet_v2",embeddings)
 
 def URL(url, vars=None) : 
 	url =Flask.url_for(url,**vars)
@@ -52,7 +53,10 @@ def index():
 
 @app.route('/submit_message', methods=['POST'])
 def submit_message():
-    message = request.form.get('message')
+    message = '<strong>' + request.form.get('message') + '</strong>'
+    global search_index
+    response = search_index.similarity_search(message, k=1)
+    message += "<br>"+response[0].page_content+"</strong>"
     # do something with the message, like store it in a database
     return jsonify({'message': message})
 
