@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="https://unpkg.com/chota@latest">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/alignment.css') }}">
+    <title>Flask AJAX Example</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function() {
+            $('#message-form').submit(function(event) {
+                event.preventDefault();
+                $.ajax({
+                    type: 'POST',
+                    url: '/submit_message',
+                    data: $('#message-form').serialize(),
+                    success: function(data) {
+                        $('#message-list').append('<li>' + data.message + '</li>');
+                        $('#message-form')[0].reset();
+                    },
+                    error: function() {
+                        alert('Error submitting message');
+                    }
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h1>Flask AJAX Example</h1>
+    <ul id="message-list">
+        <!-- Existing messages will be inserted here -->
+    </ul>
+    <form id="message-form" method="POST">
+        <input type="text" name="message" placeholder="Enter your message">
+        <button type="submit">Submit</button>
+    </form>
+</body>
+</html>
