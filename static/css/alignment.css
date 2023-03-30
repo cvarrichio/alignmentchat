@@ -3,9 +3,13 @@
     /* overflow-wrap: break-word; */
     /* border-right: .15em solid orange; */
     word-wrap: break-word;
-    margin-bottom: 90px;
+    margin-bottom: 1em;
     /* animation: typing 1.2s steps(30, end); */
   }
+
+#message-list {
+    margin-bottom: 90px;
+}
 
   #message-form {
     position: fixed;
@@ -13,13 +17,13 @@
     bottom: 0;
 }
 
-  #message-list li::before {
+/*   #message-list li::before {
     content: '';
     display: inline-block;
     width: 0;
     height: 100%;
     vertical-align: bottom;
-  }
+  } */
   
   @keyframes typing {
     from { width: 0 }
