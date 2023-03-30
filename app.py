@@ -55,8 +55,23 @@ def index():
 def submit_message():
     message = '<strong>' + request.form.get('message') + '</strong>'
     global search_index
-    response = search_index.similarity_search(message, k=1)
-    message += "<br>"+response[0].page_content+"</strong>"
+    docs = search_index.similarity_search(message, k=4)
+    import openai
+    openai.api_key = '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'
+    prompt = 'Use the following sources to help answer the question below.'
+    from langchain.chat_models import ChatOpenAI
+    from langchain.chains.question_answering import load_qa_chain
+        
+    import os
+    os.environ["OPENAI_API_KEY"] = "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"
+    response = load_qa_chain(ChatOpenAI(temperature=0, model_name='gpt-3.5-turbo'))(
+            {
+                "input_documents": docs,
+                "question": message,
+            },
+        )
+    app.logger.error(response)
+    message += "<br>"+response['output_text']+"</strong>"
     # do something with the message, like store it in a database
     return jsonify({'message': message})
 
