@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from flask import Flask, jsonify, render_template, request, g
 
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
@@ -13,7 +15,6 @@ from langchain.embeddings import HuggingFaceEmbeddings
 #search_index8 = FAISS.from_documents(text_chunks, embeddings)
 #search_index8 = FAISS.from_documents(summary_chunks, OpenAIEmbeddings())
 #search_index8.save_local("alignment_faiss_index_mpnet_v2")
-
 
 app = Flask(__name__)
 
