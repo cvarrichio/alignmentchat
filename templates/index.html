@@ -1,36 +1,60 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <link rel="stylesheet" href="https://unpkg.com/chota@latest">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/alignment.css') }}">
     <title>AlignmentGPT</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript">
-        $(document).ready(function() {
-            $('#message-form').submit(function(event) {
+        function applyTypingEffect(element) {
+            const text = element.textContent;
+            let charIndex = 0;
+
+            element.textContent = '';
+
+            function type() {
+                if (charIndex < text.length) {
+                    element.textContent += text.charAt(charIndex);
+                    charIndex++;
+                    setTimeout(type, 5); // Adjust the typing speed here
+                }
+            }
+
+            type();
+        }
+
+        $(document).ready(function () {
+            $('#message-form').submit(function (event) {
                 event.preventDefault();
                 $.ajax({
                     type: 'POST',
                     url: '/submit_message',
                     data: $('#message-form').serialize(),
-                    beforeSend: function() {
+                    beforeSend: function () {
+                        $('#message-list').append('<li><strong>' + $('#message-form input[name=message]').val() + '</strong></li>');
                         // show spinner
                         $('#message-list').append('<li><div class="spinner"></div></li>');
                         window.scrollTo(0, document.body.scrollHeight);
                     },
-                    success: function(data) {
+                    success: function (data) {
                         // remove spinner and show message
                         $('#message-list li:last-child').remove();
-                        $('#message-list').append('<li>' + data.message + '</li>');
+                        const newMessage = document.createElement('li');
+                        newMessage.className = 'typing-effect';
+                        newMessage.innerHTML = data.message;
+                        $('#message-list').append(newMessage);
                         $('#message-form')[0].reset();
-
+                        window.scrollTo(0, document.body.scrollHeight);
+                        // Apply the typing effect to the new message
+                        applyTypingEffect(newMessage);
                     },
-                    error: function() {
+                    error: function () {
                         // remove spinner and show error message
                         $('#message-list li:last-child').remove();
                         $('#message-list').append('<li>Error submitting message</li>');
                     },
-                    complete: function() {
+                    complete: function () {
                         // hide spinner
                         $('#message-list li:last-child .spinner').hide();
                         //$('#message-list').scrollTop($('#message-list').prop('scrollHeight'));
@@ -41,6 +65,7 @@
         });
     </script>
 </head>
+
 <body>
     <h1>AlignmentGPT</h1>
     <ul id="message-list">
@@ -51,4 +76,5 @@
         <button type="submit">Submit</button>
     </form>
 </body>
+
 </html>
