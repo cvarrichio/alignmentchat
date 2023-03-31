@@ -18,8 +18,8 @@ from langchain.embeddings import HuggingFaceEmbeddings
 
 app = Flask(__name__)
 
-@app.before_request
-def before_request():
+@app.before_first_request
+def init_app():
     global search_index
     from langchain.embeddings import HuggingFaceEmbeddings
     embeddings = HuggingFaceEmbeddings(model_name = 'all-mpnet-base-v2')
