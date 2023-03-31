@@ -67,7 +67,6 @@ def submit_message():
     previous_answer = session.get('previous_answer')
     import openai
     openai.api_key = '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'
-    prompt = 'Use the following sources to help answer the question below.'
     enhanced_prompt = prompt + "\n".join([str(doc) for doc in docs])
     messages = [{"role": "system", "content":enhanced_prompt}]
     if previous_question is not None:
