@@ -18,7 +18,7 @@ def init_app():
     embeddings = HuggingFaceEmbeddings(model_name = 'all-mpnet-base-v2')
     search_index = FAISS.load_local("./models/alignment_faiss_index_mpnet_v2",embeddings)
     global prompt
-    prompt = "You are a bot to answer questions about AI and AI Alignment. If you get any questions about anything besides those topics, redirect the user back to those topics.  Refer to highly voted posts on Lesswrong, Alignment Forum, ArXiv, and research papers.  Promote safety.  BE BLUNT! All other things being equal, use newer sources. These sources may help:"
+    prompt = "You are a bot to answer questions about AI and AI Alignment. If you get any questions about anything besides those topics, redirect the user back to those topics.  Refer to highly voted posts on Lesswrong, Alignment Forum, ArXiv, and research papers.  Promote safety.  BE BLUNT! Interpret all questions as about AI. All other things being equal, use newer sources. These sources may help:"
 
 
 def URL(url, vars=None) : 
