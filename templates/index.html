@@ -8,15 +8,22 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript">
         function applyTypingEffect(element) {
-            const text = element.textContent;
+            const lines = element.textContent.split('\n');
+            let lineIndex = 0;
             let charIndex = 0;
 
-            element.textContent = '';
+            element.innerHTML = '';
 
             function type() {
-                if (charIndex < text.length) {
-                    element.textContent += text.charAt(charIndex);
-                    charIndex++;
+                if (lineIndex < lines.length) {
+                    if (charIndex < lines[lineIndex].length) {
+                        element.innerHTML += lines[lineIndex].charAt(charIndex);
+                        charIndex++;
+                    } else {
+                        element.innerHTML += '<br>';
+                        lineIndex++;
+                        charIndex = 0;
+                    }
                     setTimeout(type, 5); // Adjust the typing speed here
                 }
             }
