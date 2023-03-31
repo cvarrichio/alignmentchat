@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from flask import Flask, jsonify, render_template, request, g
+from flask import Flask, jsonify, render_template, request, g, session
 
 from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.chat_models import ChatOpenAI
@@ -17,6 +17,7 @@ from langchain.embeddings import HuggingFaceEmbeddings
 #search_index8.save_local("alignment_faiss_index_mpnet_v2")
 
 app = Flask(__name__)
+app.secret_key = 'NBcY8hc0aZ15DHJ'
 
 @app.before_first_request
 def init_app():
@@ -24,6 +25,9 @@ def init_app():
     from langchain.embeddings import HuggingFaceEmbeddings
     embeddings = HuggingFaceEmbeddings(model_name = 'all-mpnet-base-v2')
     search_index = FAISS.load_local("./models/alignment_faiss_index_mpnet_v2",embeddings)
+    global prompt
+    prompt = "You are a bot to answer questions about AI and AI Alignment.  If you get any questions about anything besides those topics, redirect the user back to those topics.  Refer to highly voted posts on Lesswrong, Alignment Forum, ArXiv, and research papers.  Promote safety.  These sources may help:"
+
 
 def URL(url, vars=None) : 
 	url =Flask.url_for(url,**vars)
@@ -54,25 +58,34 @@ def index():
 
 @app.route('/submit_message', methods=['POST'])
 def submit_message():
-    message = '<strong>' + request.form.get('message') + '</strong>'
+    question = request.form.get('message')
+    message = '<strong>' + question + '</strong>'
     global search_index
-    docs = search_index.similarity_search(message, k=4)
+    global prompt
+    docs = search_index.similarity_search(question, k=4)
+    previous_question = session.get('previous_question')
+    previous_answer = session.get('previous_answer')
     import openai
     openai.api_key = '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'
     prompt = 'Use the following sources to help answer the question below.'
-    from langchain.chat_models import ChatOpenAI
-    from langchain.chains.question_answering import load_qa_chain
-        
-    import os
-    os.environ["OPENAI_API_KEY"] = "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"
-    response = load_qa_chain(ChatOpenAI(temperature=0, model_name='gpt-3.5-turbo'))(
-            {
-                "input_documents": docs,
-                "question": message,
-            },
-        )
+    enhanced_prompt = prompt + "\n".join([str(doc) for doc in docs])
+    messages = [{"role": "system", "content":enhanced_prompt}]
+    if previous_question is not None:
+        messages += [{"role":"user","content":previous_question}]
+        messages += [{"role":"assistant","content":previous_answer}]
+    messages += [{"role":"user","content":question}]
+    MODEL = "gpt-3.5-turbo"
+    response = openai.ChatCompletion.create(
+        model=MODEL,
+        messages=messages,
+        temperature=0.7,
+    )
+    response['prompt'] = enhanced_prompt
     app.logger.error(response)
-    message += "<br>"+response['output_text']+"</strong>"
+    answer = response.choices[0].message.content
+    session['previous_question'] = question
+    session['previous_answer'] = answer
+    message += "<br>"+answer+"</strong>"
     # do something with the message, like store it in a database
     return jsonify({'message': message})
 
