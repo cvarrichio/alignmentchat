@@ -2,19 +2,11 @@
 
 from flask import Flask, jsonify, render_template, request, g, session
 
-from langchain.chains.qa_with_sources import load_qa_with_sources_chain
 from langchain.chat_models import ChatOpenAI
-from langchain.docstore.document import Document
-from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores.faiss import FAISS
-
 from langchain.embeddings import HuggingFaceEmbeddings
 
-#embeddings = HuggingFaceEmbeddings(model_name = 'all-mpnet-base-v2')
-#search_index8 = FAISS.from_documents(text_chunks, embeddings)
-#search_index8 = FAISS.from_documents(summary_chunks, OpenAIEmbeddings())
-#search_index8.save_local("alignment_faiss_index_mpnet_v2")
+
 
 app = Flask(__name__)
 app.secret_key = 'NBcY8hc0aZ15DHJ'
@@ -58,10 +50,10 @@ def index():
 
 @app.route('/submit_message', methods=['POST'])
 def submit_message():
-    question = request.form.get('message')
-    message = '<strong>' + question + '</strong>'
     global search_index
     global prompt
+    question = request.form.get('message')
+    message = '<strong>' + question + '</strong>'
     docs = search_index.similarity_search(question, k=4)
     previous_question = session.get('previous_question')
     previous_answer = session.get('previous_answer')
@@ -84,7 +76,7 @@ def submit_message():
     answer = response.choices[0].message.content
     session['previous_question'] = question
     session['previous_answer'] = answer
-    message += "<br>"+answer+"</strong>"
+    message += "<br>"+answer
     # do something with the message, like store it in a database
     return jsonify({'message': message})
 
