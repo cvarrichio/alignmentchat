@@ -50,6 +50,7 @@ def index():
 
 @app.route('/submit_message', methods=['POST'])
 def submit_message():
+    question = request.form.get('message')
     global search_index
     global prompt
     question = request.form.get('message')
@@ -76,7 +77,7 @@ def submit_message():
     answer = response.choices[0].message.content
     session['previous_question'] = question
     session['previous_answer'] = answer
-    message += "<br>"+answer
+    message = "<br>"+answer
     # do something with the message, like store it in a database
     return jsonify({'message': message})
 
