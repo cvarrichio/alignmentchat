@@ -2,6 +2,7 @@
 <html>
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/chota@latest">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/alignment.css') }}">
     <title>AlignmentGPT</title>
@@ -55,6 +56,7 @@
                         window.scrollTo(0, document.body.scrollHeight);
                         // Apply the typing effect to the new message
                         applyTypingEffect(newMessage);
+
                     },
                     error: function () {
                         // remove spinner and show error message

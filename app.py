@@ -82,7 +82,6 @@ def submit_message():
     session['previous_question'] = question
     session['previous_answer'] = answer
     message = "<br>"+answer
-    # do something with the message, like store it in a database
     return jsonify({'message': message})
 
 if __name__ == '__main__':
