@@ -18,8 +18,9 @@ def init_app():
     embeddings = HuggingFaceEmbeddings(model_name = 'all-mpnet-base-v2')
     search_index = FAISS.load_local("./models/alignment_faiss_index_mpnet_v2",embeddings)
     global prompt
-    prompt = "You are a bot to answer questions about AI and AI Alignment. If you get any questions about anything besides those topics, redirect the user back to those topics.  Refer to highly voted posts on Lesswrong, Alignment Forum, ArXiv, and research papers.  Promote safety.  BE BLUNT! Interpret all questions as about AI. All other things being equal, use newer sources. These sources may help:"
-
+    global post_prompt
+    prompt = "You are a bot to answer questions about AI and AI Alignment. If you get any questions about anything besides those topics, redirect the user back to those topics.  Refer to highly voted posts on Lesswrong, Alignment Forum, ArXiv, and research papers. These sources may help:"
+    post_prompt = " Promote safety.  BE BLUNT! Interpret all questions as about AI. All other things being equal, use newer sources. If you use one of the provided sources, provide a link at the end."
 
 def URL(url, vars=None) : 
 	url =Flask.url_for(url,**vars)
@@ -53,6 +54,7 @@ def submit_message():
     question = request.form.get('message')
     global search_index
     global prompt
+    global post_prompt
     question = request.form.get('message')
     message = '<strong>' + question + '</strong>'
     docs = search_index.similarity_search(question, k=4)
@@ -60,7 +62,7 @@ def submit_message():
     previous_answer = session.get('previous_answer')
     import openai
     openai.api_key = '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'
-    enhanced_prompt = prompt + "\n".join([str(doc) for doc in docs])
+    enhanced_prompt = prompt + "\n".join([str(doc) for doc in docs]) + '\n' + post_prompt
     messages = [{"role": "system", "content":enhanced_prompt}]
     if previous_question is not None:
         messages += [{"role":"user","content":previous_question}]
