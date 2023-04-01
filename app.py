@@ -67,6 +67,8 @@ def submit_message():
     if previous_question is not None:
         messages += [{"role":"user","content":previous_question}]
         messages += [{"role":"assistant","content":previous_answer}]
+    else:
+        messages += [{"role":"assistant","content":"Welcome to AlignmentGPT.  Please ask a question about AI or AI safety."}]
     messages += [{"role":"user","content":question}]
     MODEL = "gpt-3.5-turbo"
     response = openai.ChatCompletion.create(
