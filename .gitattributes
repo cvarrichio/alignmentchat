@@ -1,0 +1,2 @@
+models/align*.zip filter=lfs diff=lfs merge=lfs -text
+models/alignment_faiss_index_mpnet_v2.zip filter=lfs diff=lfs merge=lfs -text
