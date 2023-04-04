@@ -69,7 +69,7 @@ def submit_message():
         messages += [{"role":"assistant","content":previous_answer}]
     else:
         messages += [{"role":"assistant","content":"Welcome to AlignmentGPT.  Please ask a question about AI or AI safety."}]
-    messages += [{"role":"user","content":question}]
+    messages += [{"role":"user","content":"In the context of AI safety," + question}]
     MODEL = "gpt-3.5-turbo"
     response = openai.ChatCompletion.create(
         model=MODEL,
