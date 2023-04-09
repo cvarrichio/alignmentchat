@@ -61,7 +61,8 @@ def submit_message():
     previous_question = session.get('previous_question')
     previous_answer = session.get('previous_answer')
     import openai
-    openai.api_key = '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'
+    import os
+    openai.api_key = os.environ.get('OPENAI_API_KEY')
     enhanced_prompt = prompt + "\n".join([str(doc) for doc in docs]) + '\n' + post_prompt
     messages = [{"role": "system", "content":enhanced_prompt}]
     if previous_question is not None:
