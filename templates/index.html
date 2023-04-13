@@ -45,6 +45,7 @@
                         $('#message-list').append('<li><strong>' + $('#message-form input[name=message]').val() + '</strong></li>');
                         // show spinner
                         $('#message-list').append('<li><div class="spinner"></div></li>');
+                        $('#message-form')[0].reset();
                         window.scrollTo(0, document.body.scrollHeight);
                     },
                     success: function (data) {
@@ -54,7 +55,7 @@
                         newMessage.className = 'typing-effect';
                         newMessage.innerHTML = data.message;
                         $('#message-list').append(newMessage);
-                        $('#message-form')[0].reset();
+    
                         window.scrollTo(0, document.body.scrollHeight);
                         // Apply the typing effect to the new message
                         applyTypingEffect(newMessage);
