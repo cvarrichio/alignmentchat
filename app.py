@@ -83,7 +83,7 @@ def submit_message():
     else:
         prompt_history = ''
 
-    prompt_combined = "\n".join([prompt,prompt_sources,prompt_history])
+    prompt_combined = "\n".join([prompt,prompt_sources,prompt_history,post_prompt])
 
     #Create message history
     messages = []
