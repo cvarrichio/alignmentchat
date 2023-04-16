@@ -1,5 +1,5 @@
 from langchain.docstore.document import Document
-from langchain.text_splitter import CharacterTextSplitter
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores.faiss import FAISS
 
 import jsonlines
@@ -8,7 +8,7 @@ line=0
 labels  = {}
 text_chunks = []
 summary_chunks = []
-splitter = CharacterTextSplitter(separator=" ", chunk_size=500, chunk_overlap=32)
+splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=64)
 with jsonlines.open("models/alignment_texts.jsonl", "r") as reader:
     for entry in reader:
         line+=1
@@ -18,7 +18,7 @@ with jsonlines.open("models/alignment_texts.jsonl", "r") as reader:
                 #print('Omitting low score ' + entry.get('score',10))
                 continue
             for chunk in splitter.split_text(entry['text']):
-                text_chunks.append(Document(page_content=chunk, metadata={'source':entry['url'],'title':entry['title'],'date':entry['date_published']}))
+                text_chunks.append(Document(page_content=chunk, metadata={'source':entry['url'],'title':entry['title'],'authors':entry['authors'],'date':entry['date_published'],'score':entry.get('score','10')}))
         except Exception as e:
             print(e)
             pass
