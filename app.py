@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 app = FastAPI()
 app.secret_key = 'NBcY8hc0aZ15DHJ'
@@ -61,6 +63,7 @@ async def stream_messages(model, messages):
     ):
         content = chunk["choices"][0].get("delta", {}).get("content")
         if content:
+            logging.info(content)
             yield json.dumps({"message": content})
 
 @app.post("/submit_message")
