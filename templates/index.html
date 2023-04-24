@@ -8,30 +8,6 @@
     <title>AlignmentGPT</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript">
-        function applyTypingEffect(element) {
-            const lines = element.textContent.split('\n');
-            let lineIndex = 0;
-            let charIndex = 0;
-
-            element.innerHTML = '';
-
-            function type() {
-                if (lineIndex < lines.length) {
-                    if (charIndex < lines[lineIndex].length) {
-                        element.innerHTML += lines[lineIndex].charAt(charIndex);
-                        charIndex++;
-                    } else {
-                        element.innerHTML += '<br>';
-                        lineIndex++;
-                        charIndex = 0;
-                        window.scrollTo(0, document.body.scrollHeight);
-                    }
-                    setTimeout(type, 5); // Adjust the typing speed here
-                }
-            }
-
-            type();
-        }
 
         $(document).ready(function () {
             $('#message-form').submit(async function (event) {
@@ -72,9 +48,9 @@
                     while (true) {
                         const { value, done } = await reader.read();
                         if (done) break;
-                        
-      const message = JSON.parse(decoder.decode(value)).message;
-    const formattedMessage = message.replace(/\n/g, '<br>');
+
+                        const message = JSON.parse(decoder.decode(value)).message;
+                        const formattedMessage = message.replace(/\n/g, '<br>');
                         newMessage.innerHTML += formattedMessage;
 
                         window.scrollTo(0, document.body.scrollHeight);
