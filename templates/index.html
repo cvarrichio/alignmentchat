@@ -34,54 +34,60 @@
         }
 
         $(document).ready(function () {
-            $('#message-form').submit(function (event) {
-                event.preventDefault();
-                $.ajax({
-                    type: 'POST',
-                    url: '/submit_message',
-                    data: JSON.stringify({message: $('#message-form input[name=message]').val()}),
-                    contentType: 'application/json;charset=UTF-8',
-                    beforeSend: function () {
-                        $('#message-list').append('<li><strong>' + $('#message-form input[name=message]').val() + '</strong></li>');
-                        // show spinner
-                        $('#message-list').append('<li><div class="spinner"></div></li>');
-                        $('#message-form')[0].reset();
-                        window.scrollTo(0, document.body.scrollHeight);
-                    },
-                    success: function (data) {
-                        // remove spinner and show message
-                        $('#message-list li:last-child').remove();
-                        const newMessage = document.createElement('li');
-                        newMessage.className = 'typing-effect';
-                        newMessage.innerHTML = data.message;
+    $('#message-form').submit(async function (event) {
+        event.preventDefault();
 
-                        $('#message-list').append(newMessage);
+        // ... (keep your existing code until beforeSend function)
 
-                        window.scrollTo(0, document.body.scrollHeight);
-                        // Apply the typing effect to the new message
-                        applyTypingEffect(newMessage);
-
-                    },
-                    error: function () {
-                        // remove spinner and show error message
-                        $('#message-list li:last-child').remove();
-                        $('#message-list').append('<li>Error submitting message</li>');
-                    },
-                    complete: function () {
-                        // hide spinner
-                        $('#message-list li:last-child .spinner').hide();
-                        window.scrollTo(0, document.body.scrollHeight);
-                    }
-                });
+        try {
+            const response = await fetch('/submit_message', {
+                method: 'POST',
+                body: JSON.stringify({ message: $('#message-form input[name=message]').val() }),
+                headers: { 'Content-Type': 'application/json' },
             });
-        });
+
+            // Remove spinner
+            $('#message-list li:last-child .spinner').hide();
+
+            if (!response.ok) {
+                throw new Error('Error submitting message');
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder('utf-8');
+
+            // Read and display messages as they are streamed
+            while (true) {
+                const { value, done } = await reader.read();
+                if (done) break;
+
+                const message = JSON.parse(decoder.decode(value)).message;
+                const newMessage = document.createElement('li');
+                newMessage.className = 'typing-effect';
+                newMessage.innerHTML = message;
+                $('#message-list').append(newMessage);
+
+                window.scrollTo(0, document.body.scrollHeight);
+                //applyTypingEffect(newMessage);
+            }
+        } catch (error) {
+            // Remove spinner and show error message
+            $('#message-list li:last-child').remove();
+            $('#message-list').append('<li>Error submitting message</li>');
+        } finally {
+            // Hide spinner
+            $('#message-list li:last-child .spinner').hide();
+            window.scrollTo(0, document.body.scrollHeight);
+        }
+    });
+});
     </script>
 </head>
 
 <body>
     <h1>AlignmentGPT</h1>
     <ul id="message-list">
-        <li>Welcome to AlignmentGPT.  Please ask a question about AI or AI safety.</li>
+        <li>Welcome to AlignmentGPT. Please ask a question about AI or AI safety.</li>
         <!-- Existing messages will be inserted here -->
     </ul>
     <form id="message-form" method="POST">
