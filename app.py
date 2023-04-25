@@ -37,6 +37,15 @@ def update_memory(input, output):
     memory.save_context({'input': input}, {'output': output})
     return
 
+class UpdateMemoryInput(BaseModel):
+    question: str
+    answer: str
+
+@app.post("/update_memory")
+async def update_memory_endpoint(data: UpdateMemoryInput):
+    update_memory(data.question, data.answer)
+    return {"status": "ok"}
+
 def langchain_to_openai(messages):
     from langchain.schema import messages_to_dict
     mess_dict = messages_to_dict(messages)
@@ -63,7 +72,7 @@ async def stream_messages(model, messages):
     ):
         content = chunk["choices"][0].get("delta", {}).get("content")
         if content:
-            logging.info(content)
+            #logging.debug(content)
             yield json.dumps({"message": content})
 
 @app.post("/submit_message")
