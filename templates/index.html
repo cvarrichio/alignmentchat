@@ -3,9 +3,8 @@
 
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/chota.min.css') }}">
-    <!-- <link rel="stylesheet" href="https://unpkg.com/@picocss/pico@1.*/css/pico.min.css"> -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/alignment.css') }}">
+    <link rel="stylesheet" href="/static/css/chota.min.css">
+    <link rel="stylesheet" href="/static/css/alignment.css">
     <title>AlignmentGPT</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript">
@@ -40,7 +39,8 @@
                 $.ajax({
                     type: 'POST',
                     url: '/submit_message',
-                    data: $('#message-form').serialize(),
+                    data: JSON.stringify({message: $('#message-form input[name=message]').val()}),
+                    contentType: 'application/json;charset=UTF-8',
                     beforeSend: function () {
                         $('#message-list').append('<li><strong>' + $('#message-form input[name=message]').val() + '</strong></li>');
                         // show spinner
@@ -54,8 +54,9 @@
                         const newMessage = document.createElement('li');
                         newMessage.className = 'typing-effect';
                         newMessage.innerHTML = data.message;
+
                         $('#message-list').append(newMessage);
-    
+
                         window.scrollTo(0, document.body.scrollHeight);
                         // Apply the typing effect to the new message
                         applyTypingEffect(newMessage);
@@ -69,7 +70,6 @@
                     complete: function () {
                         // hide spinner
                         $('#message-list li:last-child .spinner').hide();
-                        //$('#message-list').scrollTop($('#message-list').prop('scrollHeight'));
                         window.scrollTo(0, document.body.scrollHeight);
                     }
                 });
