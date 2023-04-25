@@ -12,6 +12,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
 
 app = FastAPI()
 app.secret_key = 'NBcY8hc0aZ15DHJ'
@@ -35,6 +37,20 @@ def update_memory(input, output):
     memory.save_context({'input': input}, {'output': output})
     return
 
+class UpdateMemoryInput(BaseModel):
+    question: str
+    answer: str
+
+@app.post("/update_memory")
+async def update_memory_endpoint(data: UpdateMemoryInput):
+    update_memory(data.question, data.answer)
+    return {"status": "ok"}
+
+def langchain_to_openai(messages):
+    from langchain.schema import messages_to_dict
+    mess_dict = messages_to_dict(messages)
+    new_messages = [{'role':'user' if message['type']=='human' else 'assistant' if message['type']=='ai' else message['type'],'content':message['data']['content']} for message in mess_dict]
+    return new_messages
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request):
@@ -44,6 +60,20 @@ async def index(request: Request):
 class MessageInput(BaseModel):
     message: str
 
+from fastapi.responses import StreamingResponse
+import json
+import openai
+
+async def stream_messages(model, messages):
+    async for chunk in await openai.ChatCompletion.acreate(
+        model=model,
+        messages=messages,
+        stream=True,
+    ):
+        content = chunk["choices"][0].get("delta", {}).get("content")
+        if content:
+            #logging.debug(content)
+            yield json.dumps({"message": content})
 
 @app.post("/submit_message")
 async def submit_message(message_data: MessageInput):
@@ -80,13 +110,16 @@ async def submit_message(message_data: MessageInput):
     from langchain.schema import HumanMessage
     messages += [HumanMessage(content="In the context of AI safety, " + question)]
 
-    response = chat_model(messages)
+    #response = chat_model(messages)
     #app.logger.error(response)
-    answer = response.content
-    message = "<br>" + answer
-    update_memory(question, answer)
-
-    return {'message': message}
+    #answer = response.content
+    #message = "<br>" + answer
+    #update_memory(question, answer)
+    MODEL = 'gpt-3.5-turbo'
+    return StreamingResponse(
+        stream_messages(model=MODEL, messages=langchain_to_openai(messages)),
+        media_type="text/plain",
+    )
 
 if __name__ == "__main__":
     import uvicorn

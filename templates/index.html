@@ -8,80 +8,86 @@
     <title>AlignmentGPT</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript">
-        function applyTypingEffect(element) {
-            const lines = element.textContent.split('\n');
-            let lineIndex = 0;
-            let charIndex = 0;
-
-            element.innerHTML = '';
-
-            function type() {
-                if (lineIndex < lines.length) {
-                    if (charIndex < lines[lineIndex].length) {
-                        element.innerHTML += lines[lineIndex].charAt(charIndex);
-                        charIndex++;
-                    } else {
-                        element.innerHTML += '<br>';
-                        lineIndex++;
-                        charIndex = 0;
-                        window.scrollTo(0, document.body.scrollHeight);
-                    }
-                    setTimeout(type, 5); // Adjust the typing speed here
-                }
-            }
-
-            type();
-        }
 
         $(document).ready(function () {
-            $('#message-form').submit(function (event) {
+            $('#message-form').submit(async function (event) {
                 event.preventDefault();
-                $.ajax({
-                    type: 'POST',
-                    url: '/submit_message',
-                    data: JSON.stringify({message: $('#message-form input[name=message]').val()}),
-                    contentType: 'application/json;charset=UTF-8',
-                    beforeSend: function () {
-                        $('#message-list').append('<li><strong>' + $('#message-form input[name=message]').val() + '</strong></li>');
-                        // show spinner
-                        $('#message-list').append('<li><div class="spinner"></div></li>');
-                        $('#message-form')[0].reset();
-                        window.scrollTo(0, document.body.scrollHeight);
-                    },
-                    success: function (data) {
-                        // remove spinner and show message
-                        $('#message-list li:last-child').remove();
-                        const newMessage = document.createElement('li');
-                        newMessage.className = 'typing-effect';
-                        newMessage.innerHTML = data.message;
 
-                        $('#message-list').append(newMessage);
+                try {
+                    const input_message = $('#message-form input[name=message]').val()
+                    const response = await fetch('/submit_message', {
+                        method: 'POST',
+                        body: JSON.stringify({ message: input_message }),
+                        headers: { 'Content-Type': 'application/json' },
+                    });
 
-                        window.scrollTo(0, document.body.scrollHeight);
-                        // Apply the typing effect to the new message
-                        applyTypingEffect(newMessage);
+                    // Show user's question
+                    $('#message-list').append('<li><strong>' + input_message + '</strong></li>');
 
-                    },
-                    error: function () {
-                        // remove spinner and show error message
-                        $('#message-list li:last-child').remove();
-                        $('#message-list').append('<li>Error submitting message</li>');
-                    },
-                    complete: function () {
-                        // hide spinner
-                        $('#message-list li:last-child .spinner').hide();
-                        window.scrollTo(0, document.body.scrollHeight);
+                    // Show spinner
+                    //$('#message-list').append('<li><div class="spinner"></div></li>');
+
+                    // Reset the message input field
+                    $('#message-form')[0].reset();
+
+
+                    if (!response.ok) {
+                        throw new Error('Error submitting message');
                     }
-                });
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+
+                    const newMessage = document.createElement('li');
+                    newMessage.className = 'typing-effect';
+                    $('#message-list').append(newMessage);
+                    // Remove spinner
+
+                    // Read and display messages as they are streamed
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+
+                        const message = JSON.parse(decoder.decode(value)).message;
+                        const formattedMessage = message.replace(/\n/g, '<br>');
+                        newMessage.innerHTML += formattedMessage;
+
+                        window.scrollTo(0, document.body.scrollHeight);
+
+                    }
+                    // Call update_memory after streaming responses are complete
+                    const answer = newMessage.innerHTML;
+                    callUpdateMemory(input_message, answer);
+
+                } catch (error) {
+                    // Remove spinner and show error message
+                    //$('#message-list li:last-child').remove();
+                    $('#message-list').append(error);
+                } finally {
+                    // Hide spinner
+                    $('#message-list li:last-child .spinner').hide();
+                    window.scrollTo(0, document.body.scrollHeight);
+                }
             });
         });
+
+        function callUpdateMemory(question, answer) {
+            fetch('/update_memory', {
+                method: 'POST',
+                body: JSON.stringify({ question, answer }),
+                headers: { 'Content-Type': 'application/json' },
+            })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        }
     </script>
 </head>
 
 <body>
     <h1>AlignmentGPT</h1>
     <ul id="message-list">
-        <li>Welcome to AlignmentGPT.  Please ask a question about AI or AI safety.</li>
+        <li>Welcome to AlignmentGPT. Please ask a question about AI or AI safety.</li>
         <!-- Existing messages will be inserted here -->
     </ul>
     <form id="message-form" method="POST">
