@@ -65,4 +65,4 @@ class OpenAI_chain(BaseModel):
             content = chunk["choices"][0].get("delta", {}).get("content")
             if content:
                 #logging.debug(content)
-                yield json.dumps({"message": content})
+                yield json.dumps({"message": content}) + '\n'
