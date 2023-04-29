@@ -15,14 +15,19 @@
 
                 try {
                     const input_message = $('#message-form input[name=message]').val()
+
+                    $('#message-list').append('<li><strong>' + input_message + '</strong></li>');
+
+                    get_questions(input_message);
+
                     const response = await fetch('/submit_message', {
                         method: 'POST',
                         body: JSON.stringify({ message: input_message }),
                         headers: { 'Content-Type': 'application/json' },
                     });
 
+
                     // Show user's question
-                    $('#message-list').append('<li><strong>' + input_message + '</strong></li>');
 
                     // Show spinner
                     //$('#message-list').append('<li><div class="spinner"></div></li>');
@@ -71,7 +76,7 @@
             });
         });
 
-        function callUpdateMemory(question, answer) {
+        async function callUpdateMemory(question, answer) {
             fetch('/update_memory', {
                 method: 'POST',
                 body: JSON.stringify({ question, answer }),
@@ -80,6 +85,15 @@
                 .catch(error => {
                     console.error('Error:', error);
                 });
+        }
+
+        async function get_questions(question) {
+            const response = fetch('/get_questions', {
+                        method: 'POST',
+                        body: JSON.stringify({ message: input_message }),
+                        headers: { 'Content-Type': 'application/json' },
+                    });
+            alert('Getting questions')
         }
     </script>
 </head>

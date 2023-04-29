@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-import os
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
-from dotenv import load_dotenv
 from fastapi.responses import StreamingResponse
+from dotenv import load_dotenv
+load_dotenv(override=True)
+
+
 
 from models import chat_model, question_model
 
-load_dotenv()
 
 import logging
 logging.basicConfig(level=logging.DEBUG)
@@ -24,22 +25,27 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 class MessageInput(BaseModel):
     message: str
 
-
 class UpdateMemoryInput(BaseModel):
     question: str
     answer: str
 
+class QuestionSuggestions(BaseModel):
+    questions: List[str] = Field(description="list of names of films they starred in")
 
 @app.post("/update_memory")
 async def update_memory_endpoint(data: UpdateMemoryInput):
-    global chat_model
     chat_model.update_memory(data.question, data.answer)
+    logging.debug('Updating memory!')
     return {"status": "ok"}
 
 
 @app.post("/get_questions")
-async def get_questions(data: MessageInput):
-    
+async def get_questions(message_data: MessageInput):
+    question = message_data.message
+    response = question_model.create(question)
+    import time
+    logging.debug('Getting questions!')
+    time.sleep(16)
     return {"status": "ok"}
 
 
@@ -50,10 +56,8 @@ async def index(request: Request):
 
 @app.post("/submit_message")
 async def submit_message(message_data: MessageInput):
-    global chat_model
     question = message_data.message
     message = '<strong>' + question + '</strong>'
-    
     MODEL = 'gpt-3.5-turbo'
     return StreamingResponse(
         chat_model.stream_messages(MODEL,question),
