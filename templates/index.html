@@ -12,20 +12,27 @@
         $(document).ready(function () {
             $('#message-form').submit(async function (event) {
                 event.preventDefault();
+                const input_message = $('#message-form input[name=message]').val()
 
-                try {
-                    const input_message = $('#message-form input[name=message]').val()
+                $('#message-list').append('<li><strong>' + input_message + '</strong></li>');
 
-                    $('#message-list').append('<li><strong>' + input_message + '</strong></li>');
+                Promise.all([stream_responses(input_message),get_questions(input_message)])
 
-                    get_questions(input_message);
+            });
+        });
+
+        async function stream_responses(question) {
+            
+            try {
+                    
+                    alert('Submitting message!')
 
                     const response = await fetch('/submit_message', {
                         method: 'POST',
-                        body: JSON.stringify({ message: input_message }),
+                        body: JSON.stringify({ message: question }),
                         headers: { 'Content-Type': 'application/json' },
                     });
-
+                    alert('Message submitted')
 
                     // Show user's question
 
@@ -53,16 +60,25 @@
                         const { value, done } = await reader.read();
                         if (done) break;
 
-                        const message = JSON.parse(decoder.decode(value)).message;
-                        const formattedMessage = message.replace(/\n/g, '<br>');
-                        newMessage.innerHTML += formattedMessage;
+                        const decodedValue = decoder.decode(value);
+                        const jsonObjects = decodedValue.split('\n').filter((obj) => obj.trim() !== ''); // Split and filter out empty strings
 
+                        for (const jsonObject of jsonObjects) {
+                            try {
+                                const message = JSON.parse(jsonObject).message;
+                                const formattedMessage = message.replace(/\n/g, '<br>');
+                                newMessage.innerHTML += formattedMessage;
+                            } catch (error) {
+                                console.error('Error parsing JSON:', jsonObject, error);
+                            }
+                        }
+                        alert('Alert4')
                         window.scrollTo(0, document.body.scrollHeight);
 
                     }
                     // Call update_memory after streaming responses are complete
                     const answer = newMessage.innerHTML;
-                    callUpdateMemory(input_message, answer);
+                    callUpdateMemory(question, answer);
 
                 } catch (error) {
                     // Remove spinner and show error message
@@ -73,8 +89,7 @@
                     $('#message-list li:last-child .spinner').hide();
                     window.scrollTo(0, document.body.scrollHeight);
                 }
-            });
-        });
+        }
 
         async function callUpdateMemory(question, answer) {
             fetch('/update_memory', {
@@ -90,7 +105,7 @@
         async function get_questions(question) {
             const response = fetch('/get_questions', {
                         method: 'POST',
-                        body: JSON.stringify({ message: input_message }),
+                        body: JSON.stringify({ message: question }),
                         headers: { 'Content-Type': 'application/json' },
                     });
             alert('Getting questions')
