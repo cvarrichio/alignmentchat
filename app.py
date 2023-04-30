@@ -28,10 +28,7 @@ class MessageInput(BaseModel):
 class UpdateMemoryInput(BaseModel):
     question: str
     answer: str
-
-class QuestionSuggestions(BaseModel):
-    questions: List[str] = Field(description="list of names of films they starred in")
-
+    
 @app.post("/update_memory")
 async def update_memory_endpoint(data: UpdateMemoryInput):
     chat_model.update_memory(data.question, data.answer)
@@ -43,9 +40,6 @@ async def update_memory_endpoint(data: UpdateMemoryInput):
 async def get_questions(message_data: MessageInput):
     question = message_data.message
     response = question_model.create(question)
-    import time
-    logging.debug('Getting questions!')
-    time.sleep(16)
     return {"status": "ok"}
 
 

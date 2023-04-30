@@ -53,9 +53,18 @@
                         const { value, done } = await reader.read();
                         if (done) break;
 
-                        const message = JSON.parse(decoder.decode(value)).message;
-                        const formattedMessage = message.replace(/\n/g, '<br>');
-                        newMessage.innerHTML += formattedMessage;
+                        const decodedValue = decoder.decode(value);
+                        const jsonObjects = decodedValue.split('\n').filter((obj) => obj.trim() !== ''); // Split and filter out empty strings
+
+                        for (const jsonObject of jsonObjects) {
+                            try {
+                                const message = JSON.parse(jsonObject).message;
+                                const formattedMessage = message.replace(/\n/g, '<br>');
+                                newMessage.innerHTML += formattedMessage;
+                            } catch (error) {
+                                console.error('Error parsing JSON:', jsonObject, error);
+                            }
+                        }
 
                         window.scrollTo(0, document.body.scrollHeight);
 
