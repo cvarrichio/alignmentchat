@@ -17,8 +17,8 @@ class MessageInput(BaseModel):
 
 @app.post("/get_questions")
 async def get_questions(message_data: MessageInput):
-    import time
-    time.sleep(10)
+    import asyncio
+    asyncio.sleep(10)
     return {"status": "ok"}
 
 
