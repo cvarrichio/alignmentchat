@@ -2,6 +2,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from flask import jsonify
 from pydantic import BaseModel
 from fastapi.staticfiles import StaticFiles
 
@@ -25,9 +26,18 @@ async def get_questions(message_data: MessageInput):
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
+async def random_numbers():
+    import random
+    import asyncio
+    while True:
+        await asyncio.sleep(.1)  # Wait for 1 second
+        yield random.randint(1, 10)
+
 @app.post("/submit_message")
 async def submit_message(message_data: MessageInput):
-    return {"status": "ok"}
+    from fastapi.encoders import jsonable_encoder
+    async for number in random_numbers():
+        return jsonable_encoder({'message': number})
 
 if __name__ == "__main__":
     import uvicorn

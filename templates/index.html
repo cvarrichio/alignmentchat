@@ -10,35 +10,46 @@
             $('#message-form').submit(async function (event) {
                 event.preventDefault();
 
-                    const input_message = $('#message-form input[name=message]').val()
+                const input_message = $('#message-form input[name=message]').val()
 
-                    $('#message-list').append('<li><strong>' + input_message + '</strong></li>');
+                $('#message-list').append('<li><strong>' + input_message + '</strong></li>');
 
-                    side_track(input_message);
+                side_track(input_message);
 
-                    const response = await fetch('/submit_message', {
-                        method: 'POST',
-                        body: JSON.stringify({ message: input_message }),
-                        headers: { 'Content-Type': 'application/json' },
-                    });
+                const response = await fetch('/submit_message', {
+                    method: 'POST',
+                    body: JSON.stringify({ message: input_message }),
+                    headers: { 'Content-Type': 'application/json' },
+                });
 
-                    // Reset the message input field
-                    $('#message-form')[0].reset();
+                // Reset the message input field
+                $('#message-form')[0].reset();
 
-                    const newMessage = document.createElement('li');
-                    $('#message-list').append(newMessage);
-                    newMessage.innerHTML += response
+                const newMessage = document.createElement('li');
+                newMessage.className = 'typing-effect';
+                $('#message-list').append(newMessage);
 
-   
+                const stream = response.body;
+
+                const reader = stream.getReader();
+                const decoder = new TextDecoder();
+
+                const { value, done } = await reader.read();
+
+                const message = JSON.parse(decoder.decode(value)).message;
+                newMessage.innerHTML += message
+  
+
+
             });
         });
 
         async function side_track(question) {
-            const response = fetch('/side_track', {
-                        method: 'POST',
-                        body: JSON.stringify({ message: question }),
-                        headers: { 'Content-Type': 'application/json' },
-                    });
+            const response = fetch('/get_questions', {
+                method: 'POST',
+                body: JSON.stringify({ message: question }),
+                headers: { 'Content-Type': 'application/json' },
+            });
             alert('Getting questions')
         }
     </script>
