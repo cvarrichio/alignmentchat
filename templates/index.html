@@ -12,29 +12,22 @@
         $(document).ready(function () {
             $('#message-form').submit(async function (event) {
                 event.preventDefault();
-                const input_message = $('#message-form input[name=message]').val()
 
-                $('#message-list').append('<li><strong>' + input_message + '</strong></li>');
+                try {
+                    const input_message = $('#message-form input[name=message]').val()
 
-                Promise.all([stream_responses(input_message),get_questions(input_message)])
+                    // Show user's question
 
-            });
-        });
+                    $('#message-list').append('<li><strong>' + input_message + '</strong></li>');
 
-        async function stream_responses(question) {
-            
-            try {
-                    
-                    alert('Submitting message!')
+                    get_questions(input_message);
 
                     const response = await fetch('/submit_message', {
                         method: 'POST',
-                        body: JSON.stringify({ message: question }),
+                        body: JSON.stringify({ message: input_message }),
                         headers: { 'Content-Type': 'application/json' },
                     });
-                    alert('Message submitted')
 
-                    // Show user's question
 
                     // Show spinner
                     //$('#message-list').append('<li><div class="spinner"></div></li>');
@@ -72,13 +65,13 @@
                                 console.error('Error parsing JSON:', jsonObject, error);
                             }
                         }
-                        alert('Alert4')
+
                         window.scrollTo(0, document.body.scrollHeight);
 
                     }
                     // Call update_memory after streaming responses are complete
                     const answer = newMessage.innerHTML;
-                    callUpdateMemory(question, answer);
+                    callUpdateMemory(input_message, answer);
 
                 } catch (error) {
                     // Remove spinner and show error message
@@ -89,7 +82,8 @@
                     $('#message-list li:last-child .spinner').hide();
                     window.scrollTo(0, document.body.scrollHeight);
                 }
-        }
+            });
+        });
 
         async function callUpdateMemory(question, answer) {
             fetch('/update_memory', {
@@ -113,10 +107,25 @@
                     const newMessage = document.createElement('li');
                     newMessage.className = 'typing-effect';
                     $('#message-list').append(newMessage);
-                    newMessage.innerHTML += JSON.stringify(data)
-                });
 
-            alert('Getting questions')
+                    // Create a div with display:flex
+                    const buttonContainer = document.createElement('div');
+                    buttonContainer.style.display = 'flex';
+                    buttonContainer.style.flexWrap = 'wrap'; // Wrap text as needed
+                    buttonContainer.style.justifyContent = 'space-between'; // Evenly divide the horizontal space
+                    newMessage.appendChild(buttonContainer);
+
+                    // Create buttons for each question
+                    for (const key in data) {
+                        const button = document.createElement('button');
+                        button.innerHTML = data[key];
+                        button.style.flex = '1'; // Evenly divide the horizontal space
+                        button.style.margin = '0 5px'; // Add space between buttons
+                        button.style.whiteSpace = 'normal'; // Wrap text as needed
+                        button.style.overflowWrap = 'break-word'; // Break long words as needed
+                        buttonContainer.appendChild(button);
+                    }
+                });
         }
     </script>
 </head>
