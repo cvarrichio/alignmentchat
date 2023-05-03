@@ -99,7 +99,7 @@
         async function get_questions(question) {
             const response = fetch('/get_questions', {
                         method: 'POST',
-                        body: JSON.stringify({ message: input_message }),
+                        body: JSON.stringify({ message: question }),
                         headers: { 'Content-Type': 'application/json' },
                     });
             alert('Getting questions')
