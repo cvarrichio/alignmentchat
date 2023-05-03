@@ -9,101 +9,69 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script type="text/javascript">
 
+        let websocket;
+
+        async function sendWebSocketMessage(data) {
+            if (websocket.readyState === WebSocket.OPEN) {
+                websocket.send(JSON.stringify(data));
+            }
+        }
+
+        async function updateMemory(question, answer) {
+            sendWebSocketMessage({
+                type: 'update_memory',
+                question: question,
+                answer: answer
+            });
+        }
+
+        async function getQuestions(question) {
+            sendWebSocketMessage({
+                type: 'get_questions',
+                message: question
+            });
+        }
+
         $(document).ready(function () {
-            $('#message-form').submit(async function (event) {
+            websocket = new WebSocket('ws://' + window.location.host + '/ws');
+
+            websocket.onmessage = function (event) {
+                const data = JSON.parse(event.data);
+
+                if (data.type === 'message') {
+                    const formattedMessage = data.message.replace(/\n/g, '<br>');
+                    $('#message-list li.typing-effect').append(formattedMessage);
+                } else if (data.type === 'memory_updated') {
+                    console.log('Memory updated');
+                } else if (data.type === 'questions_received') {
+                    alert('Getting questions');
+                }
+            };
+
+            $('#message-form').submit(function (event) {
                 event.preventDefault();
 
-                try {
-                    const input_message = $('#message-form input[name=message]').val()
+                const input_message = $('#message-form input[name=message]').val()
+                getQuestions(input_message);
+                $('#message-list').append('<li><strong>' + input_message + '</strong></li>');
 
-                    $('#message-list').append('<li><strong>' + input_message + '</strong></li>');
+                sendWebSocketMessage({
+                    type: 'submit_message',
+                    message: input_message
+                });
 
-                    get_questions(input_message);
+                // Reset the message input field
+                $('#message-form')[0].reset();
 
-                    const response = await fetch('/submit_message', {
-                        method: 'POST',
-                        body: JSON.stringify({ message: input_message }),
-                        headers: { 'Content-Type': 'application/json' },
-                    });
+                const newMessage = document.createElement('li');
+                newMessage.className = 'typing-effect';
+                $('#message-list').append(newMessage);
 
-
-                    // Show user's question
-
-                    // Show spinner
-                    //$('#message-list').append('<li><div class="spinner"></div></li>');
-
-                    // Reset the message input field
-                    $('#message-form')[0].reset();
-
-
-                    if (!response.ok) {
-                        throw new Error('Error submitting message');
-                    }
-
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder('utf-8');
-
-                    const newMessage = document.createElement('li');
-                    newMessage.className = 'typing-effect';
-                    $('#message-list').append(newMessage);
-                    // Remove spinner
-
-                    // Read and display messages as they are streamed
-                    while (true) {
-                        const { value, done } = await reader.read();
-                        if (done) break;
-
-                        const decodedValue = decoder.decode(value);
-                        const jsonObjects = decodedValue.split('\n').filter((obj) => obj.trim() !== ''); // Split and filter out empty strings
-
-                        for (const jsonObject of jsonObjects) {
-                            try {
-                                const message = JSON.parse(jsonObject).message;
-                                const formattedMessage = message.replace(/\n/g, '<br>');
-                                newMessage.innerHTML += formattedMessage;
-                            } catch (error) {
-                                console.error('Error parsing JSON:', jsonObject, error);
-                            }
-                        }
-
-                        window.scrollTo(0, document.body.scrollHeight);
-
-                    }
-                    // Call update_memory after streaming responses are complete
-                    const answer = newMessage.innerHTML;
-                    callUpdateMemory(input_message, answer);
-
-                } catch (error) {
-                    // Remove spinner and show error message
-                    //$('#message-list li:last-child').remove();
-                    $('#message-list').append(error);
-                } finally {
-                    // Hide spinner
-                    $('#message-list li:last-child .spinner').hide();
-                    window.scrollTo(0, document.body.scrollHeight);
-                }
+                window.scrollTo(0, document.body.scrollHeight);
+                
             });
         });
 
-        async function callUpdateMemory(question, answer) {
-            fetch('/update_memory', {
-                method: 'POST',
-                body: JSON.stringify({ question, answer }),
-                headers: { 'Content-Type': 'application/json' },
-            })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-        }
-
-        async function get_questions(question) {
-            const response = fetch('/get_questions', {
-                        method: 'POST',
-                        body: JSON.stringify({ message: question }),
-                        headers: { 'Content-Type': 'application/json' },
-                    });
-            alert('Getting questions')
-        }
     </script>
 </head>
 
