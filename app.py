@@ -38,13 +38,11 @@ async def update_memory_endpoint(data: UpdateMemoryInput):
 
 
 @app.post("/get_questions")
-async def get_questions(message_data: MessageInput):
+def get_questions(message_data: MessageInput):
     question = message_data.message
     response = question_model.create(question)
-    import time
-    logging.debug('Getting questions!')
-    time.sleep(8)
-    return {"status": "ok"}
+    logging.debug(response)
+    return response
 
 
 @app.get("/", response_class=HTMLResponse)

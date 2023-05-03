@@ -17,8 +17,9 @@ output_parser = StructuredOutputParser.from_response_schemas(response_schemas)
 parser = WorkingOutputFixingParser.from_llm(ChatOpenAI(model_name='gpt-4'),output_parser)
 
 memory = ConversationSummaryBufferMemory(llm=ChatOpenAI(), max_token_limit=200)
-prompt = "The user is asking questions about AI alignment and AI safety.  Propose 3 more questions that will deepen their investigation and lead them to the conclusion about safety they are seeking. Make sure no question is more than 12 words."
+prompt = "The user is asking questions about AI alignment and AI safety.  Propose 3 more questions closely related to their question that will deepen their investigation and lead them to the conclusion about safety they are seeking. Make sure no question is more than 12 words."
 question_model = OpenAI_chain(model='gpt-4',prompt=prompt,memory=memory,parser=parser)
+
 
 memory = ConversationSummaryBufferMemory(llm=ChatOpenAI(), max_token_limit=200)
 memory.chat_memory.add_ai_message("Welcome to AlignmentGPT.  Please ask a question about AI or AI safety.")

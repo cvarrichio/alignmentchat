@@ -102,12 +102,20 @@
                 });
         }
 
-        async function get_questions(question) {
+        function get_questions(question) {
             const response = fetch('/get_questions', {
-                        method: 'POST',
-                        body: JSON.stringify({ message: question }),
-                        headers: { 'Content-Type': 'application/json' },
-                    });
+                method: 'POST',
+                body: JSON.stringify({ message: question }),
+                headers: { 'Content-Type': 'application/json' },
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const newMessage = document.createElement('li');
+                    newMessage.className = 'typing-effect';
+                    $('#message-list').append(newMessage);
+                    newMessage.innerHTML += JSON.stringify(data)
+                });
+
             alert('Getting questions')
         }
     </script>
