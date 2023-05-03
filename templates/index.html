@@ -11,7 +11,11 @@
 
         $(document).ready(function () {
             $('#message-form').submit(async function (event) {
-                event.preventDefault();
+                handleMessageFormSubmit(event, null);
+            });
+
+            async function handleMessageFormSubmit(event, message) {
+                if (event) event.preventDefault();
 
                 try {
                     const input_message = $('#message-form input[name=message]').val()
@@ -82,7 +86,7 @@
                     $('#message-list li:last-child .spinner').hide();
                     window.scrollTo(0, document.body.scrollHeight);
                 }
-            });
+            };
         });
 
         async function callUpdateMemory(question, answer) {
